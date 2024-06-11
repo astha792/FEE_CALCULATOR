@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fee Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      text-transform: uppercase;
+      color: green;
+    }
+    form {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    select, input[type="number"], input[type="button"], input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="button"], input[type="submit"] {
+      width: auto;
+      cursor: pointer;
+      background-color: lightgreen;
+    }
+    input[type="button"]:hover, input[type="submit"]:hover {
+      background-color: limegreen;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    #aquacultureForm {
+      display: none;
+    }
+    #homeButtonContainer {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Fee Calculator</h1>
+    <div id="formsContainer">
+      <div id="standardForms">
+        <form id="feeCalculatorForm">
+          <label for="standard">SELECT STANDARD:</label>
+          <select id="standard" name="standard">
+            <option value="IFA">IFA</option>
+            <option value="GGFSA">GGFSA</option>
+            <option value="FSMA PSR">FSMA PSR</option>
+            <option value="GFS-IFA">GFS-IFA</option>
+          </select>
+
+          <label for="productCategory">SELECT PRODUCT CATEGORY:</label>
+          <select id="productCategory" name="productCategory">
+            <option value="Fruits and Vegetables">Fruits and Vegetables</option>
+            <option value="Flowers and Ornamentals">Flowers and Ornamentals</option>
+            <option value="Combinable crops">Combinable crops</option>
+            <option value="Hop">Hop</option>
+            <option value="Tea">Tea</option>
+            <option value="Plant propagation material">Plant propagation material</option>
+            <option value="Aquaculture">Aquaculture</option>
+            <option value="Cattle and Sheep">Cattle and Sheep</option>
+            <option value="Calf and Young Beef">Calf and Young Beef</option>
+            <option value="Dairy">Dairy</option>
+            <option value="Pigs">Pigs</option>
+            <option value="Poultry">Poultry</option>
+            <option value="Turkey">Turkey</option>
+
+          </select>
+
+          <label for="option">SELECT OPTION:</label>
+          <select id="option" name="option">
+            <option value="Option1">Option1</option>
+            <option value="Option2">Option2</option>
+          </select>
+
+          <div id="totalMembersContainer">
+            <label for="totalMembers">TOTAL MEMBERS:</label>
+            <input type="number" id="totalMembers" name="totalMembers">
+          </div>
+
+          <div id="coveredAreaContainer">
+            <label for="coveredArea">COVERED AREA - 1st HARVEST:</label>
+            <input type="number" id="coveredArea" name="coveredArea" step="0.01">
+          </div>
+
+          <div id="nonCoveredAreaContainer">
+            <label for="nonCoveredArea">NON-COVERED AREA IN HECTARES - 1st HARVEST:</label>
+            <input type="number" id="nonCoveredArea" name="nonCoveredArea" step="0.01">
+          </div>
+
+          <input type="button" value="Add Another Option" id="addAnotherOption">
+          <input type="submit" value="Calculate Total Fees">
+        </form>
+
+        <form id="aquacultureForm">
+          <label for="totalMetric">TOTAL METRIC (TONS, LIVE WEIGHT):</label>
+          <input type="number" id="totalMetric" name="totalMetric" step="0.01">
+
+          <label for="aquacultureOption">SELECT OPTION:</label>
+          <select id="aquacultureOption" name="aquacultureOption">
+            <option value="Option1">Option1</option>
+            <option value="Option2">Option2</option>
+          </select>
+
+          <div id="aquacultureTotalMembersContainer">
+            <label for="aquacultureTotalMembers">TOTAL MEMBERS:</label>
+            <input type="number" id="aquacultureTotalMembers" name="aquacultureTotalMembers">
+          </div>
+
+          <input type="button" value="Add Another Option" id="addAnotherAquacultureOption">
+          <input type="submit" value="Calculate Total Fees for Aquaculture">
+        </form>
+      </div>
+    </div>
+
+    <div id="result"></div>
+    <div id="homeButtonContainer">
+      <input type="button" value="Home" id="homeButton">
+    </div>
+  </div>
+
+  <script>
+    let totalFeesList = [];
+
+    document.getElementById('totalMembersContainer').style.display = 'none';
+    document.getElementById('aquacultureTotalMembersContainer').style.display = 'none';
+
+    document.getElementById('option').addEventListener('change', function() {
+      var totalMembersContainer = document.getElementById('totalMembersContainer');
+      if (this.value === 'Option2') {
+        totalMembersContainer.style.display = 'block';
+      } else {
+        totalMembersContainer.style.display = 'none';
+      }
+    });
+
+    document.getElementById('aquacultureOption').addEventListener('change', function() {
+      var aquacultureTotalMembersContainer = document.getElementById('aquacultureTotalMembersContainer');
+      if (this.value === 'Option2') {
+        aquacultureTotalMembersContainer.style.display = 'block';
+      } else {
+        aquacultureTotalMembersContainer.style.display = 'none';
+      }
+    });
+
+    document.getElementById('productCategory').addEventListener('change', function() {
+      var feeCalculatorForm = document.getElementById('feeCalculatorForm');
+      var aquacultureForm = document.getElementById('aquacultureForm');
+      if (this.value === 'Aquaculture') {
+        feeCalculatorForm.style.display = 'none';
+        aquacultureForm.style.display = 'block';
+      } else {
+        feeCalculatorForm.style.display = 'block';
+        aquacultureForm.style.display = 'none';
+      }
+    });
+
+    document.getElementById('addAnotherOption').addEventListener('click', function() {
+      processForm('feeCalculatorForm');
+      resetForms();
+    });
+
+    document.getElementById('addAnotherAquacultureOption').addEventListener('click', function() {
+      processForm('aquacultureForm');
+      resetForms();
+    });
+
+    document.getElementById('feeCalculatorForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      processForm('feeCalculatorForm');
+      showResult();
+    });
+
+    document.getElementById('aquacultureForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      processForm('aquacultureForm');
+      showResult();
+    });
+
+    document.getElementById('homeButton').addEventListener('click', function() {
+      totalFeesList = [];
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('formsContainer').style.display = 'block';
+      document.getElementById('homeButtonContainer').style.display = 'none';
+    });
+
+    function processForm(formId) {
+      if (formId === 'feeCalculatorForm') {
+        var standard = document.getElementById('standard').value;
+        var productCategory = document.getElementById('productCategory').value;
+        var option = document.getElementById('option').value;
+        var supplementFees = (option === 'Option2') ? parseFloat(document.getElementById('totalMembers').value) * 1 : 0;
+        var certificationFees = (option === 'Option2') ? 130 : 25;
+
+        var coveredArea = parseFloat(document.getElementById('coveredArea').value) || 0;
+        var nonCoveredArea = parseFloat(document.getElementById('nonCoveredArea').value) || 0;
+
+        var coveredAreaFees = 0;
+        var nonCoveredAreaFees = 0;
+
+        // Calculate fees for covered area
+        if (coveredArea > 0) {
+          coveredAreaFees = calculateCoveredAreaFees(standard, coveredArea);
+        }
+
+        // Calculate fees for non covered area
+        if (nonCoveredArea > 0) {
+          nonCoveredAreaFees = calculateNonCoveredAreaFees(standard, nonCoveredArea);
+        }
+
+        var totalFees = supplementFees + coveredAreaFees + nonCoveredAreaFees + certificationFees;
+
+        totalFeesList.push({
+          type: `${standard}-${productCategory}-${option}`,
+          fees: totalFees,
+          details: {
+            supplementFees: supplementFees,
+            certificationFees: certificationFees,
+            coveredAreaFees: coveredAreaFees,
+            nonCoveredAreaFees: nonCoveredAreaFees
+          }
+        });
+      } else if (formId === 'aquacultureForm') {
+        var option = document.getElementById('aquacultureOption').value;
+        var totalMetric = parseFloat(document.getElementById('totalMetric').value) || 0;
+        var certificationFees = (option === 'Option2') ? 130 : 25;
+        var supplementFees = (option === 'Option2') ? parseFloat(document.getElementById('aquacultureTotalMembers').value) * 1 : 0;
+        var metricFees = 0;
+
+        // Calculate fees for total metric
+        if (totalMetric < 10) {
+          metricFees = 10;
+        } else if (totalMetric >= 10 && totalMetric < 100) {
+          metricFees = 50;
+        } else if (totalMetric >= 100 && totalMetric < 500) {
+          metricFees = 100;
+        } else if (totalMetric >= 500 && totalMetric < 1000) {
+          metricFees = 150;
+        } else if (totalMetric >= 1000 && totalMetric < 5000) {
+          metricFees = 500;
+        } else if (totalMetric >= 5000 && totalMetric < 10000) {
+          metricFees = 1000;
+        } else if (totalMetric >= 10000 && totalMetric < 25000) {
+          metricFees = 1500;
+        } else if (totalMetric >= 25000) {
+          metricFees = 2000;
+        }
+
+        var totalFees = certificationFees + supplementFees + metricFees;
+
+        totalFeesList.push({
+          type: `Aquaculture-${option}`,
+          fees: totalFees,
+          details: {
+            certificationFees: certificationFees,
+            supplementFees: supplementFees,
+            metricFees: metricFees
+          }
+        });
+      }
+    }
+
+    function calculateCoveredAreaFees(standard, coveredArea) {
+      let fees = 0;
+      if (standard === 'IFA' || standard === 'GGFSA') {
+        if (coveredArea < 0.1) {
+          fees = 0.14;
+        } else if (coveredArea >= 0.1 && coveredArea < 0.5) {
+          fees = 2.65;
+        } else if (coveredArea >= 0.5 && coveredArea < 1) {
+          fees = 5.30;
+        } else if (coveredArea >= 1 && coveredArea < 1.5) {
+          fees = 7.95;
+        } else if (coveredArea >= 1.5 && coveredArea < 5) {
+          fees = 15.90;
+        } else if (coveredArea >= 5 && coveredArea < 10) {
+          fees = 26.50;
+        } else if (coveredArea >= 10 && coveredArea < 30) {
+          fees = 42.40;
+        } else if (coveredArea >= 30 && coveredArea < 100) {
+          fees = 79.50;
+        } else if (coveredArea >= 100 && coveredArea < 500) {
+          fees = 159.00;
+        } else if (coveredArea >= 500) {
+          fees = 256.00;
+        }
+      } else if (standard === 'FSMA PSR') {
+        if (coveredArea < 0.1) {
+          fees = 19.00;
+        } else if (coveredArea >= 0.1 && coveredArea < 0.5) {
+          fees = 54.00;
+        } else if (coveredArea >= 0.5 && coveredArea < 1) {
+          fees = 104.00;
+        } else if (coveredArea >= 1 && coveredArea < 1.5) {
+          fees = 134.00;
+        } else if (coveredArea >= 1.5 && coveredArea < 5) {
+          fees = 218.00;
+        } else if (coveredArea >= 5 && coveredArea < 10) {
+          fees = 322.00;
+        } else if (coveredArea >= 10 && coveredArea < 30) {
+          fees = 370.00;
+        } else if (coveredArea >= 30 && coveredArea < 100) {
+          fees = 591.00;
+        } else if (coveredArea >= 100 && coveredArea < 500) {
+          fees = 1182.00;
+        } else if (coveredArea >= 500) {
+          fees = 2170.00;
+        }
+      } else if (standard === 'GFS-IFA') {
+        if (coveredArea < 0.1) {
+          fees = 1.00;
+        } else if (coveredArea >= 0.1 && coveredArea < 0.5) {
+          fees = 7.50;
+        } else if (coveredArea >= 0.5 && coveredArea < 1) {
+          fees = 15.00;
+        } else if (coveredArea >= 1 && coveredArea < 1.5) {
+          fees = 23.00;
+        } else if (coveredArea >= 1.5 && coveredArea < 5) {
+          fees = 45.00;
+        } else if (coveredArea >= 5 && coveredArea < 10) {
+          fees = 75.40;
+        } else if (coveredArea >= 10 && coveredArea < 30) {
+          fees = 120.00;
+        } else if (coveredArea >= 30 && coveredArea < 100) {
+          fees = 220.00;
+        } else if (coveredArea >= 100 && coveredArea < 500) {
+          fees = 450.00;
+        } else if (coveredArea >= 500) {
+          fees = 730.00;
+        }
+      }
+      return fees;
+    }
+
+    function calculateNonCoveredAreaFees(standard, nonCoveredArea) {
+      let fees = 0;
+      if (standard === 'IFA' || standard === 'GGFSA') {
+        if (nonCoveredArea < 0.1) {
+          fees = 0.06;
+        } else if (nonCoveredArea >= 0.1 && nonCoveredArea < 0.5) {
+          fees = 1.06;
+        } else if (nonCoveredArea >= 0.5 && nonCoveredArea < 2) {
+          fees = 2.12;
+        } else if (nonCoveredArea >= 2 && nonCoveredArea < 5) {
+          fees = 5.30;
+        } else if (nonCoveredArea >= 5 && nonCoveredArea < 15) {
+          fees = 7.95;
+        } else if (nonCoveredArea >= 15 && nonCoveredArea < 100) {
+          fees = 15.90;
+        } else if (nonCoveredArea >= 100 && nonCoveredArea < 1000) {
+          fees = 37.10;
+        } else if (nonCoveredArea >= 1000 && nonCoveredArea < 5000) {
+          fees = 79.50;
+        } else if (nonCoveredArea >= 5000 && nonCoveredArea < 10000) {
+          fees = 159.00;
+        } else if (nonCoveredArea >= 10000) {
+          fees = 256.00;
+        }
+      } else if (standard === 'FSMA PSR') {
+        if (nonCoveredArea < 0.1) {
+          fees = 9.00;
+        } else if (nonCoveredArea >= 0.1 && nonCoveredArea < 0.5) {
+          fees = 22.00;
+        } else if (nonCoveredArea >= 0.5 && nonCoveredArea < 2) {
+          fees = 40.00;
+        } else if (nonCoveredArea >= 2 && nonCoveredArea < 5) {
+          fees = 64.00;
+        } else if (nonCoveredArea >= 5 && nonCoveredArea < 15) {
+          fees = 109.00;
+        } else if (nonCoveredArea >= 15 && nonCoveredArea < 100) {
+          fees = 193.00;
+        } else if (nonCoveredArea >= 100 && nonCoveredArea < 1000) {
+          fees = 325.00;
+        } else if (nonCoveredArea >= 1000 && nonCoveredArea < 5000) {
+          fees = 591.00;
+        } else if (nonCoveredArea >= 5000 && nonCoveredArea < 10000) {
+          fees = 1182.00;
+        } else if (nonCoveredArea >= 10000) {
+          fees = 2170.00;
+        }
+      } else if (standard === 'GFS-IFA') {
+        if (nonCoveredArea < 0.1) {
+          fees = 1.00;
+        } else if (nonCoveredArea >= 0.1 && nonCoveredArea < 0.5) {
+          fees = 3.00;
+        } else if (nonCoveredArea >= 0.5 && nonCoveredArea < 2) {
+          fees = 6.00;
+        } else if (nonCoveredArea >= 2 && nonCoveredArea < 5) {
+          fees = 15.00;
+        } else if (nonCoveredArea >= 5 && nonCoveredArea < 15) {
+          fees = 23.00;
+        } else if (nonCoveredArea >= 15 && nonCoveredArea < 100) {
+          fees = 45.00;
+        } else if (nonCoveredArea >= 100 && nonCoveredArea < 1000) {
+          fees = 100.00;
+        } else if (nonCoveredArea >= 1000 && nonCoveredArea < 5000) {
+          fees = 220.00;
+        } else if (nonCoveredArea >= 5000 && nonCoveredArea < 10000) {
+          fees = 450.00;
+        } else if (nonCoveredArea >= 10000) {
+          fees = 730.00;
+        }
+      }
+      return fees;
+    }
+
+    function resetForms() {
+      document.getElementById('feeCalculatorForm').reset();
+      document.getElementById('aquacultureForm').reset();
+      document.getElementById('feeCalculatorForm').style.display = 'block';
+      document.getElementById('aquacultureForm').style.display = 'none';
+      document.getElementById('totalMembersContainer').style.display = 'none';
+      document.getElementById('aquacultureTotalMembersContainer').style.display = 'none';
+    }
+
+    function showResult() {
+      var resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = totalFeesList.map((item, index) => {
+        return `
+          <h3>${item.type}</h3>
+          <p>Total Fees: ${item.fees.toFixed(2)} €</p>
+          ${Object.keys(item.details).map(key => `<p>${key.replace(/([A-Z])/g, ' $1')}: ${item.details[key].toFixed(2)} €</p>`).join('')}
+        `;
+      }).join('');
+
+      resultDiv.innerHTML += `<h3>Total Combined Fees: ${totalFeesList.reduce((acc, item) => acc + item.fees, 0).toFixed(2)} €</h3>`;
+
+      document.getElementById('formsContainer').style.display = 'none';
+      document.getElementById('homeButtonContainer').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
